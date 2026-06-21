@@ -1,0 +1,61 @@
+import { DamageType, type EnemyDef } from '../core/types';
+
+// Enemy archetypes. All numbers are PLACEHOLDERS (see SCALING.md) — do not balance.
+// Enemies guard resource camps; behavior (chase/leash/regen) lives in AggroSystem.
+export const ENEMIES: Record<string, EnemyDef> = {
+  wolf: {
+    id: 'wolf',
+    label: 'Wolf',
+    emoji: '🐺',
+    color: 0x6b7280,
+    maxHealth: 30,
+    damage: 5,
+    damageType: DamageType.Physical,
+    attackSpeed: 1.0,
+    moveSpeed: 120,
+  },
+  goblin: {
+    id: 'goblin',
+    label: 'Goblin',
+    emoji: '👺',
+    color: 0x4caf50,
+    maxHealth: 45,
+    damage: 7,
+    damageType: DamageType.Physical,
+    attackSpeed: 0.9,
+    moveSpeed: 110,
+  },
+  oreCreature: {
+    id: 'oreCreature',
+    label: 'Ore Golem',
+    emoji: '🪨',
+    color: 0x8d6e63,
+    maxHealth: 80,
+    damage: 10,
+    damageType: DamageType.Physical,
+    attackSpeed: 0.6,
+    moveSpeed: 80,
+  },
+  crystalMonster: {
+    id: 'crystalMonster',
+    label: 'Crystal Horror',
+    emoji: '👾',
+    color: 0x7ad7f0,
+    maxHealth: 120,
+    damage: 14,
+    damageType: DamageType.Magic,
+    attackSpeed: 0.8,
+    moveSpeed: 100,
+  },
+  etherWraith: {
+    id: 'etherWraith',
+    label: 'Ether Wraith',
+    emoji: '👻',
+    color: 0xc792ea,
+    maxHealth: 180,
+    damage: 20,
+    damageType: DamageType.Magic,
+    attackSpeed: 1.1,
+    moveSpeed: 130,
+  },
+};
