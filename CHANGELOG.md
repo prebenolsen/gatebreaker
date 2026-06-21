@@ -3,6 +3,17 @@
 All notable changes to Gatebreaker are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/). This project adheres to semver.
 
+## [0.1.3] — 2026-06-21
+
+### Added
+- **GitHub Pages deploy pipeline** (`.github/workflows/deploy.yml`): builds with `npm ci && npm run build` on every
+  push to `main` (and on manual `workflow_dispatch`) and publishes `dist/` via the official Pages actions.
+  Optional Supabase credentials are read from repo secrets `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
+
+### Changed
+- **Vite `base`** is now `/gatebreaker/` for production builds (the GitHub Pages project subpath); dev server stays
+  at `/`.
+
 ## [0.1.2] — 2026-06-21
 
 ### Added
