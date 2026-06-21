@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { UPGRADES } from '../data/upgrades';
-import { RESOURCES } from '../data/resources';
+import { CURRENCIES } from '../data/currencies';
 import { upgrades } from '../systems/UpgradeSystem';
 
 /**
@@ -35,7 +35,7 @@ export class UpgradePanel {
       const level = upgrades.getLevel(def.id);
       const maxed = upgrades.isMaxed(def);
       const cost = upgrades.nextCost(def);
-      const res = RESOURCES[def.cost.type];
+      const coin = CURRENCIES[def.cost.currency];
       const affordable = upgrades.canAfford(def);
 
       const bg = this.scene.add
@@ -54,7 +54,7 @@ export class UpgradePanel {
       });
 
       const buy = this.scene.add
-        .text(340, 14, maxed ? 'MAX' : `Buy ${cost} ${res.emoji}`, {
+        .text(340, 14, maxed ? 'MAX' : `Buy ${cost} ${coin.emoji}`, {
           fontSize: '14px',
           color: maxed ? '#888' : affordable ? '#0d1117' : '#ffb4b4',
           backgroundColor: maxed ? '#333' : affordable ? '#39d353' : '#5a2730',

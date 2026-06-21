@@ -3,12 +3,13 @@ import type { EnemyDef, Vec2 } from '../core/types';
 
 const RADIUS = 16;
 
-export type EnemyState = 'idle' | 'chasing' | 'returning';
+export type EnemyState = 'idle' | 'chasing';
 
 /**
- * An enemy entity: state + placeholder rendering. Its `anchor` is its home
- * position; AggroSystem leashes it back there when the player flees. CombatSystem
- * handles its attacks. The entity only draws itself and tracks its own numbers.
+ * An enemy entity: state + placeholder rendering. Its `anchor` records its spawn
+ * position. AggroSystem makes it chase the player across the whole map (it stops
+ * at a stand-off distance so it never pushes the player); CombatSystem handles its
+ * attacks. The entity only draws itself and tracks its own numbers.
  */
 export class Enemy extends Phaser.GameObjects.Container {
   readonly def: EnemyDef;

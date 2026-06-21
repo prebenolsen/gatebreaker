@@ -8,12 +8,15 @@ export const EventBus = new Phaser.Events.EventEmitter();
 export const GameEvents = {
   ResourceGathered: 'resource:gathered',
   InventoryChanged: 'inventory:changed',
+  WalletChanged: 'wallet:changed',
   EnemyKilled: 'enemy:killed',
   CampCleared: 'camp:cleared',
   PlayerHealthChanged: 'player:health-changed',
   PlayerDied: 'player:died',
   LevelChanged: 'level:changed',
   UpgradePurchased: 'upgrade:purchased',
+  /** Generic transient HUD message (e.g. a sale summary). */
+  Notice: 'ui:notice',
 } as const;
 
 // ── Event payload shapes (documentation + type help for listeners) ───────────
@@ -35,4 +38,7 @@ export interface PlayerHealthPayload {
 export interface LevelChangedPayload {
   levelId: string;
   levelIndex: number;
+}
+export interface NoticePayload {
+  message: string;
 }

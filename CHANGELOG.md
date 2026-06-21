@@ -3,6 +3,76 @@
 All notable changes to Gatebreaker are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/). This project adheres to semver.
 
+## [0.3.1] — 2026-06-21
+
+### Changed
+- **Top-left HUD no longer overlaps the top gate cluster.** Removed the two instructional hint lines under
+  the resource/coin readout and shrank the HUD card (200→116px tall). In all five levels the forward gate
+  (`y` 90→185) and its Sell/Upgrade platforms (`y` 150→290) moved down so none sits stacked underneath the
+  level card. Placements only — no gameplay numbers tuned.
+
+## [0.3.0] — 2026-06-21
+
+### Changed
+- **Portrait orientation for mobile.** The game now targets a phone held vertically. The world reference
+  size in `config/balance.ts` flipped from landscape `1280×720` to portrait `720×1280`, and Phaser's FIT
+  scale mode letterboxes it onto any device.
+- **All five levels re-laid out vertically.** Each level's `width`/`height` is now `720×1280` and every
+  placement was redesigned around a bottom-to-top flow: the player starts at the bottom, resources zig-zag
+  up the tall corridor, and the forward gate (with its Sell/Upgrade platforms and guarding camp) sits at the
+  top. Back-gates moved to the bottom by the entry. No gameplay numbers were tuned — placements only.
+- **HUD hints wrap** to the narrower portrait panel (panel grew 184→200px tall) and the move hint now reads
+  "drag anywhere (or WASD / arrows)" to lead with the touch control.
+
+### Added
+- **Mobile viewport hardening** in `index.html`: `user-scalable=no` + `viewport-fit=cover`, web-app-capable
+  meta tags, and `touch-action: none` / `overscroll-behavior: none` so touch-drags drive the in-game
+  joystick instead of scrolling or zooming the page.
+
+## [0.2.0] — 2026-06-21
+
+### Added
+- **Coin economy (Bronze / Silver / Gold).** New `Currency` enum + `data/currencies.ts` catalog and a
+  persistent `WalletSystem` (mirrors the inventory store). The HUD now shows the coin purse beneath the
+  resource counts.
+- **Sell platforms.** Each level has a 💰 **Sell** platform beside the forward gate: stepping onto it cashes
+  in the entire inventory for coins (one sale per step-on) and shows a toast. Selling is handled by the new
+  `MarketSystem.sellAll()` using each resource's placeholder `sell` value.
+- **Upgrade platforms.** A separate ⬆️ **Upgrade** platform beside the forward gate opens the upgrade menu
+  while the player stands on it and closes it when they step off.
+- New `Platform` entity and a `platforms` array on `LevelDefinition` (data-driven placement).
+
+### Changed
+- **Everything costs coins, not resources.** Resources are now only *sold*; upgrades are *bought* with
+  Bronze/Silver/Gold. `UpgradeDef.cost.type` (a `ResourceType`) became `cost.currency` (a `Currency`), and
+  `UpgradeSystem` charges the wallet instead of the inventory.
+- **Resource sell-worth order is Stone < Wood < Iron < Crystal < Ether**, expressed via each resource's
+  `sell` value (coin denomination + amount) in `data/resources.ts`.
+- **Removed the `[U]` upgrade hotkey.** Upgrades open/close via the upgrade platform only (`UpgradeScene` and
+  `UIScene` no longer bind keys for it). HUD hint updated.
+- **Return gate moved to the entry.** Each level past the first now places its always-open back-gate next to
+  where the player came in (bottom-left) rather than the top-left corner. Its camp is already cleared, so the
+  prior level is safe to re-farm.
+
+### Notes
+- All economy numbers (sell values, coin costs) are PLACEHOLDERS — not balanced (see `SCALING.md`).
+
+## [0.1.4] — 2026-06-21
+
+### Changed
+- **Enemies always chase the player** across the whole map. Removed the guarded-zone / leashing model: enemies no
+  longer engage only inside a `zoneRadius` and no longer return home + fast-regen. Every living enemy runs at the
+  player for as long as the player is alive (still at `enemy.speedFactorVsPlayer` × current move speed).
+- **Enemies can no longer move the player.** A chasing enemy now stops at a personal-space stand-off
+  (`collision.playerRadius + collision.enemyRadius`) — close enough to attack, but it never overlaps or shoves the
+  player.
+- Removed the now-unused tunables `enemy.zoneRadius`, `enemy.returnRegenPerSecond`, and `enemy.idleRegenPerSecond`
+  (see `SCALING.md`). Simplified `EnemyState` to `idle | chasing` (dropped `returning`).
+
+### Notes
+- **Returning to a previous level** is already supported: every level past the first has an always-open back-gate
+  (`requiredCampId: ''`) at the top-left leading to the prior level, usable at any time.
+
 ## [0.1.3] — 2026-06-21
 
 ### Added

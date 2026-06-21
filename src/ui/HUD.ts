@@ -1,23 +1,27 @@
 import Phaser from 'phaser';
 import { EventBus, GameEvents, type PlayerHealthPayload } from '../core/EventBus';
 import { inventory } from '../systems/InventorySystem';
+import { wallet } from '../systems/WalletSystem';
 import { RESOURCES } from '../data/resources';
+import { CURRENCIES } from '../data/currencies';
 
 /**
- * Top-left heads-up display: player health bar, resource counts, current level,
- * and a controls hint. Lives in the parallel UIScene and updates via events.
+ * Top-left heads-up display: player health bar, resource counts, coin purse,
+ * current level, and a controls hint. Lives in the parallel UIScene and updates
+ * via events.
  */
 export class HUD {
   private healthText: Phaser.GameObjects.Text;
   private healthBar: Phaser.GameObjects.Graphics;
   private resourceText: Phaser.GameObjects.Text;
+  private walletText: Phaser.GameObjects.Text;
   private levelText: Phaser.GameObjects.Text;
   private health = 1;
   private maxHealth = 1;
 
   constructor(private scene: Phaser.Scene) {
     const panel = scene.add.graphics();
-    panel.fillStyle(0x000000, 0.35).fillRoundedRect(10, 10, 320, 150, 8);
+    panel.fillStyle(0x000000, 0.35).fillRoundedRect(10, 10, 340, 116, 8);
     panel.setScrollFactor(0).setDepth(100);
 
     this.levelText = scene.add
@@ -32,27 +36,27 @@ export class HUD {
       .setDepth(102);
 
     this.resourceText = scene.add
-      .text(22, 78, '', { fontSize: '14px', color: '#ffe9b0', lineSpacing: 4 })
+      .text(22, 74, '', { fontSize: '14px', color: '#ffe9b0', lineSpacing: 4 })
       .setScrollFactor(0)
       .setDepth(101);
 
-    scene.add
-      .text(22, 138, 'Move: drag / WASD / arrows    [U] Upgrades  [H] Score', {
-        fontSize: '12px',
-        color: '#a9b4c2',
-      })
+    this.walletText = scene.add
+      .text(22, 100, '', { fontSize: '14px', color: '#ffe9b0', lineSpacing: 4 })
       .setScrollFactor(0)
       .setDepth(101);
 
     EventBus.on(GameEvents.PlayerHealthChanged, this.onHealth, this);
     EventBus.on(GameEvents.InventoryChanged, this.refreshResources, this);
+    EventBus.on(GameEvents.WalletChanged, this.refreshWallet, this);
 
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       EventBus.off(GameEvents.PlayerHealthChanged, this.onHealth, this);
       EventBus.off(GameEvents.InventoryChanged, this.refreshResources, this);
+      EventBus.off(GameEvents.WalletChanged, this.refreshWallet, this);
     });
 
     this.refreshResources();
+    this.refreshWallet();
     this.drawHealth();
   }
 
@@ -85,5 +89,12 @@ export class HUD {
       .snapshot()
       .map((r) => `${RESOURCES[r.type].emoji} ${RESOURCES[r.type].label}: ${r.amount}`);
     this.resourceText.setText(parts.join('    '));
+  }
+
+  private refreshWallet(): void {
+    const parts = wallet
+      .snapshot()
+      .map((c) => `${CURRENCIES[c.currency].emoji} ${c.amount}`);
+    this.walletText.setText(parts.join('    '));
   }
 }

@@ -1,6 +1,11 @@
 import Phaser from 'phaser';
 import { Balance } from '../config/balance';
-import { EventBus, GameEvents, type LevelChangedPayload } from '../core/EventBus';
+import {
+  EventBus,
+  GameEvents,
+  type LevelChangedPayload,
+  type NoticePayload,
+} from '../core/EventBus';
 import { HUD } from '../ui/HUD';
 import { FunTextDisplay } from '../ui/FunTextDisplay';
 import { getLevel } from '../data/levels';
@@ -9,8 +14,9 @@ import { world } from '../systems/WorldState';
 import { getHighscoreService } from '../services';
 
 /**
- * Persistent overlay scene: HUD, fun-text popups, and global hotkeys
- * ([U] upgrades, [H] submit score). Runs in parallel with LevelScene.
+ * Persistent overlay scene: HUD, fun-text popups, transient notices, and the
+ * [H] submit-score hotkey. Upgrades are no longer a hotkey — the player opens
+ * them by stepping on the upgrade platform (LevelScene). Runs in parallel.
  */
 export class UIScene extends Phaser.Scene {
   private hud!: HUD;
@@ -36,27 +42,23 @@ export class UIScene extends Phaser.Scene {
       .setAlpha(0);
 
     EventBus.on(GameEvents.LevelChanged, this.onLevelChanged, this);
+    EventBus.on(GameEvents.Notice, this.onNotice, this);
 
-    const kb = this.input.keyboard;
-    kb?.on('keydown-U', () => this.toggleUpgrades());
-    kb?.on('keydown-H', () => void this.submitScore());
+    this.input.keyboard?.on('keydown-H', () => void this.submitScore());
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       EventBus.off(GameEvents.LevelChanged, this.onLevelChanged, this);
+      EventBus.off(GameEvents.Notice, this.onNotice, this);
     });
+  }
+
+  private onNotice(p: NoticePayload): void {
+    this.showToast(p.message);
   }
 
   private onLevelChanged(p: LevelChangedPayload): void {
     const def = getLevel(p.levelId);
     this.hud.setLevelName(def ? `${def.name}  (Lv ${p.levelIndex + 1})` : p.levelId);
-  }
-
-  private toggleUpgrades(): void {
-    if (this.scene.isActive('UpgradeScene')) {
-      this.scene.stop('UpgradeScene');
-    } else {
-      this.scene.launch('UpgradeScene');
-    }
   }
 
   private async submitScore(): Promise<void> {

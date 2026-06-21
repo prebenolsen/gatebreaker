@@ -33,9 +33,9 @@ These three are not optional. If a change touches gameplay numbers or content, a
 src/
   config/    balance.ts (★ all tunables), gameConfig.ts, funFacts.ts
   core/      types.ts, EventBus.ts, math.ts
-  data/      resources.ts, enemies.ts, upgrades.ts, levels/ (data-only level layouts)
-  entities/  Player, Enemy, ResourceNode, Gate   — STATE + rendering (placeholder primitives)
-  systems/   Movement, Combat, Gathering, Aggro, Regen, Inventory, Upgrade, WorldState — BEHAVIOR
+  data/      resources.ts, currencies.ts, enemies.ts, upgrades.ts, levels/ (data-only level layouts)
+  entities/  Player, Enemy, ResourceNode, Gate, Platform   — STATE + rendering (placeholder primitives)
+  systems/   Movement, Combat, Gathering, Aggro, Regen, Inventory, Wallet, Market, Upgrade, WorldState — BEHAVIOR
   scenes/    Boot, Level (generic, renders any level from data), UI, Upgrade
   ui/        HUD, FunTextDisplay, GatePrompt, UpgradePanel
   services/  HighscoreService (interface) + Local + Supabase implementations

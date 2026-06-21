@@ -1,7 +1,7 @@
 import type { PlayerStats } from '../core/types';
 import { EventBus, GameEvents } from '../core/EventBus';
 import { UPGRADES, type UpgradeDef } from '../data/upgrades';
-import { inventory } from './InventorySystem';
+import { wallet } from './WalletSystem';
 
 const STORAGE_KEY = 'gatebreaker.upgrades';
 
@@ -32,7 +32,7 @@ class Upgrades {
 
   canAfford(def: UpgradeDef): boolean {
     if (this.isMaxed(def)) return false;
-    return inventory.get(def.cost.type) >= this.nextCost(def);
+    return wallet.get(def.cost.currency) >= this.nextCost(def);
   }
 
   /** Attempt to buy one level. Returns true on success. */
@@ -40,7 +40,7 @@ class Upgrades {
     const def = UPGRADES.find((u) => u.id === id);
     if (!def || this.isMaxed(def)) return false;
     const cost = this.nextCost(def);
-    if (!inventory.spend(def.cost.type, cost)) return false;
+    if (!wallet.spend(def.cost.currency, cost)) return false;
     this.levels.set(id, this.getLevel(id) + 1);
     this.persist();
     EventBus.emit(GameEvents.UpgradePurchased, { id });

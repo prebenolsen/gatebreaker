@@ -2,10 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>Gatebreaker</title>
     <style>
-      html, body { margin: 0; height: 100%; background: #0e0e14; overflow: hidden; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #0e0e14;
+        overflow: hidden;
+        /* Portrait mobile target: don't let touch-drag scroll/zoom the page —
+           all drags are the in-game virtual joystick. */
+        overscroll-behavior: none;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
       #game { width: 100vw; height: 100vh; }
       canvas { display: block; margin: 0 auto; }
     </style>

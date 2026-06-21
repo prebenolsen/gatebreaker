@@ -9,6 +9,17 @@ export enum ResourceType {
   Ether = 'ether',
 }
 
+/**
+ * The three coin denominations. Resources are SOLD for currency (at a sell
+ * platform) and EVERYTHING is bought with currency — there is no more spending
+ * raw resources. Bronze < Silver < Gold in worth (placeholder; see SCALING.md).
+ */
+export enum Currency {
+  Bronze = 'bronze',
+  Silver = 'silver',
+  Gold = 'gold',
+}
+
 export enum DamageType {
   Physical = 'physical',
   Magic = 'magic',
@@ -29,6 +40,19 @@ export interface ResourceDef {
   gatherSeconds: number;
   /** Seconds before a depleted node respawns. Higher tiers respawn slower. */
   respawnSeconds: number;
+  /**
+   * What ONE unit of this resource sells for at a sell platform (placeholder).
+   * The relative worth across resources is expressed here (see SCALING.md).
+   */
+  sell: { currency: Currency; amount: number };
+}
+
+/** Visual + identity definition for a coin denomination (placeholder primitives). */
+export interface CurrencyDef {
+  type: Currency;
+  label: string;
+  emoji: string;
+  color: number;
 }
 
 /** Archetype definition for an enemy. All numbers are placeholders (see SCALING.md). */

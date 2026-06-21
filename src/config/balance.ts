@@ -8,10 +8,15 @@ import { DamageType, type PlayerStats } from '../core/types';
  * must read from here rather than hardcoding numbers.
  */
 export const Balance = {
-  /** World/canvas reference size. Each level fits one screen in the prototype. */
+  /**
+   * World/canvas reference size. Each level fits one screen in the prototype.
+   * PORTRAIT — the game targets a phone held vertically (9:16). Phaser's FIT
+   * scale mode letterboxes this onto any device, so levels are laid out tall:
+   * the player starts at the bottom and the forward gate sits at the top.
+   */
   world: {
-    width: 1280,
-    height: 720,
+    width: 720,
+    height: 1280,
   },
 
   player: {
@@ -41,23 +46,14 @@ export const Balance = {
   },
 
   enemy: {
-    /**
-     * Radius of a camp's guarded "area" around each enemy's anchor. The moment
-     * the player enters this zone, the enemy engages immediately (no gradual
-     * aggro). Leaving the zone makes it return home and fast-regen.
-     */
-    zoneRadius: 340,
     /** Distance at which an enemy auto-attacks the player. */
     attackRange: 42,
     /**
      * Enemy chase speed as a multiple of the player's CURRENT move speed, so
      * enemies are always slightly faster than the player (even after upgrades).
+     * Every enemy always chases the player across the whole map (no leashing).
      */
     speedFactorVsPlayer: 1.12,
-    /** Fast regen while returning home (per the concept). */
-    returnRegenPerSecond: 70,
-    /** Regen while idling at home. */
-    idleRegenPerSecond: 25,
   },
 
   /** Personal space: entities can't pass through each other (slight overlap ok). */

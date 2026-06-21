@@ -2,6 +2,7 @@ import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 import type { ResourceNode } from '../entities/ResourceNode';
 import type { Gate } from '../entities/Gate';
+import type { Platform } from '../entities/Platform';
 
 /**
  * The live entities of the current level, passed to each behavior system.
@@ -12,4 +13,5 @@ export interface LevelContext {
   enemies: Enemy[];
   resources: ResourceNode[];
   gates: Gate[];
+  platforms: Platform[];
 }

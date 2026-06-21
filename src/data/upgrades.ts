@@ -1,4 +1,4 @@
-import { ResourceType, type PlayerStats } from '../core/types';
+import { Currency, type PlayerStats } from '../core/types';
 
 export type UpgradeCategory =
   | 'damage'
@@ -11,7 +11,9 @@ export type UpgradeCategory =
 /**
  * A placeholder upgrade. Effects and costs are NOT balanced — see SCALING.md.
  * The UpgradeSystem applies `effectPerLevel * level` additively onto `stat`,
- * and charges `cost.baseAmount * cost.growth^level` of `cost.type` per purchase.
+ * and charges `cost.baseAmount * cost.growth^level` of `cost.currency` per purchase.
+ * Everything is bought with currency (earned by selling resources) — never with
+ * raw resources.
  */
 export interface UpgradeDef {
   id: string;
@@ -23,9 +25,9 @@ export interface UpgradeDef {
   /** PLACEHOLDER additive effect per level. */
   effectPerLevel: number;
   maxLevel: number;
-  /** PLACEHOLDER cost curve. */
+  /** PLACEHOLDER cost curve, denominated in one coin (Bronze/Silver/Gold). */
   cost: {
-    type: ResourceType;
+    currency: Currency;
     baseAmount: number;
     growth: number;
   };
@@ -40,7 +42,7 @@ export const UPGRADES: UpgradeDef[] = [
     stat: 'damage',
     effectPerLevel: 5,
     maxLevel: 20,
-    cost: { type: ResourceType.Stone, baseAmount: 10, growth: 1.5 },
+    cost: { currency: Currency.Bronze, baseAmount: 10, growth: 1.5 },
   },
   {
     id: 'attackSpeed',
@@ -50,7 +52,7 @@ export const UPGRADES: UpgradeDef[] = [
     stat: 'attackSpeed',
     effectPerLevel: 0.15,
     maxLevel: 20,
-    cost: { type: ResourceType.Wood, baseAmount: 10, growth: 1.5 },
+    cost: { currency: Currency.Bronze, baseAmount: 10, growth: 1.5 },
   },
   {
     id: 'health',
@@ -60,7 +62,7 @@ export const UPGRADES: UpgradeDef[] = [
     stat: 'maxHealth',
     effectPerLevel: 25,
     maxLevel: 20,
-    cost: { type: ResourceType.Stone, baseAmount: 15, growth: 1.5 },
+    cost: { currency: Currency.Bronze, baseAmount: 15, growth: 1.5 },
   },
   {
     id: 'armor',
@@ -70,7 +72,7 @@ export const UPGRADES: UpgradeDef[] = [
     stat: 'armor',
     effectPerLevel: 2,
     maxLevel: 20,
-    cost: { type: ResourceType.Iron, baseAmount: 8, growth: 1.6 },
+    cost: { currency: Currency.Silver, baseAmount: 8, growth: 1.6 },
   },
   {
     id: 'gatherSpeed',
@@ -80,7 +82,7 @@ export const UPGRADES: UpgradeDef[] = [
     stat: 'gatherSpeed',
     effectPerLevel: 0.2,
     maxLevel: 20,
-    cost: { type: ResourceType.Wood, baseAmount: 12, growth: 1.5 },
+    cost: { currency: Currency.Bronze, baseAmount: 12, growth: 1.5 },
   },
   {
     id: 'resourceBonus',
@@ -90,6 +92,6 @@ export const UPGRADES: UpgradeDef[] = [
     stat: 'resourceBonus',
     effectPerLevel: 0.25,
     maxLevel: 20,
-    cost: { type: ResourceType.Crystal, baseAmount: 5, growth: 1.7 },
+    cost: { currency: Currency.Gold, baseAmount: 5, growth: 1.7 },
   },
 ];

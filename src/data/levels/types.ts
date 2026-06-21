@@ -8,12 +8,25 @@ export interface ResourceSpawn {
 }
 
 /**
- * An enemy placement. Its spawn point doubles as its "anchor" (home) for leashing.
+ * An enemy placement (its spawn point). Enemies always chase the player once the
+ * level loads; there is no leashing back to the spawn point.
  * Enemies sharing a `campId` form a camp; a gate unlocks when a camp is cleared.
  */
 export interface EnemySpawn {
   enemyId: string;
   campId: string;
+  x: number;
+  y: number;
+}
+
+/**
+ * An interactive floor platform the player steps onto (no key press). Placed next
+ * to the forward (next-level) gate. `sell` empties the inventory for coins; `upgrade`
+ * opens the upgrade menu while the player stands on it.
+ */
+export type PlatformKind = 'sell' | 'upgrade';
+export interface PlatformSpawn {
+  kind: PlatformKind;
   x: number;
   y: number;
 }
@@ -43,4 +56,6 @@ export interface LevelDefinition {
   resources: ResourceSpawn[];
   enemies: EnemySpawn[];
   gates: GateSpawn[];
+  /** Sell / upgrade platforms (typically placed beside the forward gate). */
+  platforms: PlatformSpawn[];
 }

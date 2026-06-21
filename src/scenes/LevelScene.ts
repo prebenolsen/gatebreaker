@@ -8,8 +8,11 @@ import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { ResourceNode } from '../entities/ResourceNode';
 import { Gate } from '../entities/Gate';
+import { Platform } from '../entities/Platform';
 import { upgrades } from '../systems/UpgradeSystem';
 import { world } from '../systems/WorldState';
+import { sellAll } from '../systems/MarketSystem';
+import { CURRENCIES } from '../data/currencies';
 import type { LevelContext } from '../systems/LevelContext';
 import { MovementSystem } from '../systems/MovementSystem';
 import { CombatSystem } from '../systems/CombatSystem';
@@ -19,6 +22,7 @@ import { RegenSystem } from '../systems/RegenSystem';
 import { GatePrompt } from '../ui/GatePrompt';
 
 const GATE_ENTER_RANGE = 40;
+const PLATFORM_RANGE = 46;
 
 /**
  * Generic level runtime. Renders ANY level from its LevelDefinition and runs the
@@ -38,6 +42,8 @@ export class LevelScene extends Phaser.Scene {
 
   private transitioning = false;
   private reviving = false;
+  /** True while the player is standing on the sell platform (sell once per step-on). */
+  private onSellPlatform = false;
 
   constructor() {
     super('LevelScene');
@@ -47,6 +53,7 @@ export class LevelScene extends Phaser.Scene {
     this.levelId = data.levelId;
     this.transitioning = false;
     this.reviving = false;
+    this.onSellPlatform = false;
   }
 
   create(): void {
@@ -77,7 +84,9 @@ export class LevelScene extends Phaser.Scene {
       (g) => new Gate(this, g, world.isCampCleared(g.requiredCampId)),
     );
 
-    this.ctx = { player, enemies, resources, gates };
+    const platforms = def.platforms.map((p) => new Platform(this, p));
+
+    this.ctx = { player, enemies, resources, gates, platforms };
 
     // ── Systems ──────────────────────────────────────────────────────────────
     this.movement = new MovementSystem(this, this.ctx, {
@@ -111,7 +120,36 @@ export class LevelScene extends Phaser.Scene {
     this.gathering.update(dt);
     this.regen.update(dt, now);
     this.gatePrompt.update();
+    this.checkPlatforms();
     this.checkGateTransition();
+  }
+
+  // ── Sell / upgrade platforms (stepped on — no key press) ────────────────────
+  private checkPlatforms(): void {
+    const { player, platforms } = this.ctx;
+
+    const onSell = platforms.some(
+      (p) => p.kind === 'sell' && distance(player.x, player.y, p.x, p.y) <= PLATFORM_RANGE,
+    );
+    // Sell the whole inventory once, on the step-on edge.
+    if (onSell && !this.onSellPlatform) this.sellInventory();
+    this.onSellPlatform = onSell;
+
+    const onUpgrade = platforms.some(
+      (p) => p.kind === 'upgrade' && distance(player.x, player.y, p.x, p.y) <= PLATFORM_RANGE,
+    );
+    const upgradeOpen = this.scene.isActive('UpgradeScene');
+    if (onUpgrade && !upgradeOpen) this.scene.launch('UpgradeScene');
+    else if (!onUpgrade && upgradeOpen) this.scene.stop('UpgradeScene');
+  }
+
+  private sellInventory(): void {
+    const result = sellAll();
+    if (result.totalUnits <= 0) return;
+    const coins = Object.entries(result.gains)
+      .map(([currency, amount]) => `${CURRENCIES[currency as keyof typeof CURRENCIES].emoji} ${amount}`)
+      .join('  ');
+    EventBus.emit(GameEvents.Notice, { message: `Sold ${result.totalUnits} resources → ${coins}` });
   }
 
   // ── Camp clearing → gate unlocking ─────────────────────────────────────────
@@ -157,6 +195,8 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private onShutdown(): void {
+    // Don't leave the upgrade overlay open across a level change.
+    if (this.scene.isActive('UpgradeScene')) this.scene.stop('UpgradeScene');
     EventBus.off(GameEvents.EnemyKilled, this.onEnemyKilled, this);
     EventBus.off(GameEvents.PlayerDied, this.onPlayerDied, this);
   }

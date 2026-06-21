@@ -1,62 +1,44 @@
 import { Balance } from '../config/balance';
 import { distance, moveToward } from '../core/math';
-import type { Enemy } from '../entities/Enemy';
 import type { LevelContext } from './LevelContext';
 
 /**
- * Enemy aggro + leashing. The moment the player enters a camp's guarded ZONE
- * (zoneRadius around the enemy's anchor), the enemy engages IMMEDIATELY and
- * chases at a speed slightly above the player's current move speed — so it can
- * always catch up. If the player leaves the zone, the enemy STOPS, RETURNS home,
- * and FAST-REGENS, never following indefinitely.
+ * Enemy chase AI. Every living enemy on the map ALWAYS runs toward the player —
+ * there are no guarded zones and no leashing back home. They keep chasing at a
+ * speed slightly above the player's current move speed so they can always catch up.
+ *
+ * Crucially, an enemy STOPS at a personal-space "stand-off" distance (the moment
+ * its body would touch the player's). That keeps it close enough to attack while
+ * never overlapping the player — so an enemy can never shove or push the player
+ * around. CombatSystem handles the actual attacks once the enemy is in range.
  */
 export class AggroSystem {
   constructor(private ctx: LevelContext) {}
 
   update(dt: number): void {
     const { player } = this.ctx;
-    const { zoneRadius } = Balance.enemy;
     const chaseSpeed = player.stats.moveSpeed * Balance.enemy.speedFactorVsPlayer;
+    // Stop just as the two bodies touch: in attack range, but no overlap — so the
+    // player-vs-enemy separation in MovementSystem is never triggered by an enemy.
+    const standoff = Balance.collision.playerRadius + Balance.collision.enemyRadius;
 
     for (const enemy of this.ctx.enemies) {
       if (!enemy.isAlive()) continue;
 
-      const distFromHome = distance(enemy.x, enemy.y, enemy.anchor.x, enemy.anchor.y);
-      const playerInZone =
-        player.isAlive() &&
-        distance(enemy.anchor.x, enemy.anchor.y, player.x, player.y) <= zoneRadius;
-
-      // Decide state. Entering the zone engages immediately; leaving it returns.
-      if (playerInZone) {
-        enemy.state = 'chasing';
-      } else if (enemy.state === 'chasing') {
-        enemy.state = 'returning';
-      } else if (enemy.state !== 'returning') {
+      // No one to chase: hold position.
+      if (!player.isAlive()) {
         enemy.state = 'idle';
+        continue;
       }
 
-      // Act on state.
-      switch (enemy.state) {
-        case 'chasing':
-          this.stepToward(enemy, player.x, player.y, chaseSpeed * dt);
-          break;
-        case 'returning':
-          this.stepToward(enemy, enemy.anchor.x, enemy.anchor.y, chaseSpeed * dt);
-          enemy.heal(Balance.enemy.returnRegenPerSecond * dt);
-          if (distFromHome <= 1) {
-            enemy.setPosition(enemy.anchor.x, enemy.anchor.y);
-            enemy.state = 'idle';
-          }
-          break;
-        case 'idle':
-          if (!enemy.isFullHealth()) enemy.heal(Balance.enemy.idleRegenPerSecond * dt);
-          break;
+      enemy.state = 'chasing';
+      const dist = distance(enemy.x, enemy.y, player.x, player.y);
+      // Cap the step so the enemy settles at the stand-off ring instead of pushing in.
+      const step = Math.min(chaseSpeed * dt, dist - standoff);
+      if (step > 0) {
+        const next = moveToward(enemy.x, enemy.y, player.x, player.y, step);
+        enemy.setPosition(next.x, next.y);
       }
     }
-  }
-
-  private stepToward(enemy: Enemy, tx: number, ty: number, step: number): void {
-    const next = moveToward(enemy.x, enemy.y, tx, ty, step);
-    enemy.setPosition(next.x, next.y);
   }
 }
